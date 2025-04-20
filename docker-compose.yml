@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: url-monitor-backend
+    volumes:
+      - ./backend:/app
+      - url_health_data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8000:8000"  # Expose backend port for direct access and debugging
+    restart: unless-stopped
+    networks:
+      - url-monitor-network
+
+  frontend:
+    build: ./frontend
+    container_name: url-monitor-frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    environment:
+      - BACKEND_URL=http://backend:8000  # Set backend URL for the frontend
+    networks:
+      - url-monitor-network
+
+networks:
+  url-monitor-network:
+    driver: bridge
+
+volumes:
+  url_health_data:
